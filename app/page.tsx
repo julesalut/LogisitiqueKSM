@@ -1,14 +1,13 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Plus, Search, Package, Truck, ShoppingCart, X, MoreVertical, Edit, Trash2, ChevronRight, BarChart } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, Search, Package, Truck, ShoppingCart, X, MoreVertical, Edit, Trash2, BarChart } from 'lucide-react';
 
 const LogistiqueApp = () => {
   const [activeTab, setActiveTab] = useState('shelf');
   const [showAddForm, setShowAddForm] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [showActionMenu, setShowActionMenu] = useState(null);
   const [newProduct, setNewProduct] = useState({
     name: '',
@@ -23,9 +22,9 @@ const LogistiqueApp = () => {
   const [products, setProducts] = useState([
     {
       id: "P001",
-      name: "iPhone 15 Pro",
+      name: "Produit Test",
       reference: "REF123",
-      client: "Martin Dupont",
+      client: "Client A",
       orderNumber: "CMD001",
       date: "2024-11-16",
       shelf: "A1",
@@ -71,6 +70,42 @@ const LogistiqueApp = () => {
     });
     setShowAddForm(false);
   };
+
+  const changeStatus = (productId, newStatus) => {
+    setProducts(products.map(product => 
+      product.id === productId ? {...product, status: newStatus} : product
+    ));
+    setShowActionMenu(null);
+  };
+
+  const ActionMenu = ({ product }) => (
+    <div className="absolute right-2 top-12 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-20">
+      <div className="px-3 py-2 text-sm text-gray-500 border-b border-gray-100">
+        Changer le statut
+      </div>
+      <button 
+        onClick={() => changeStatus(product.id, 'shelf')}
+        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+      >
+        <Package className="w-4 h-4" />
+        Sur Étagère
+      </button>
+      <button 
+        onClick={() => changeStatus(product.id, 'ordered')}
+        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+      >
+        <ShoppingCart className="w-4 h-4" />
+        En Commande
+      </button>
+      <button 
+        onClick={() => changeStatus(product.id, 'shipped')}
+        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+      >
+        <Truck className="w-4 h-4" />
+        Expédié
+      </button>
+    </div>
+  );
 
   const StatsPanel = () => {
     const stats = getStats();
@@ -121,6 +156,51 @@ const LogistiqueApp = () => {
       </div>
     );
   };
+
+  const ProductCard = ({ product }) => (
+    <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className={`px-4 py-1.5 rounded-full text-white text-sm font-medium ${statusColors[product.status]} shadow-sm`}>
+            {product.status === 'shipped' ? 'Expédié' : 
+             product.status === 'ordered' ? 'En commande' : 'Sur étagère'}
+          </span>
+          <div className="relative">
+            <button 
+              onClick={() => setShowActionMenu(showActionMenu === product.id ? null : product.id)}
+              className="p-2 hover:bg-gray-100 rounded-full"
+            >
+              <MoreVertical className="w-5 h-5 text-gray-500" />
+            </button>
+            {showActionMenu === product.id && <ActionMenu product={product} />}
+          </div>
+        </div>
+        <h3 className="font-medium text-lg mb-1">{product.name}</h3>
+        <div className="space-y-1 text-sm text-gray-600">
+          <p className="flex justify-between">
+            <span>Commande</span>
+            <span className="font-medium text-gray-900">#{product.orderNumber}</span>
+          </p>
+          <p className="flex justify-between">
+            <span>Client</span>
+            <span className="font-medium text-gray-900">{product.client}</span>
+          </p>
+          <p className="flex justify-between">
+            <span>Référence</span>
+            <span className="font-medium text-gray-900">{product.reference}</span>
+          </p>
+          <p className="flex justify-between">
+            <span>Étagère</span>
+            <span className="font-medium text-gray-900">{product.shelf}</span>
+          </p>
+          <p className="flex justify-between">
+            <span>Date</span>
+            <span className="font-medium text-gray-900">{product.date}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
 
   const AddProductForm = () => (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -220,8 +300,6 @@ const LogistiqueApp = () => {
     </div>
   );
 
-  [... Le reste du code reste identique jusqu'au return ...]
-
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
       {/* Header avec recherche */}
@@ -273,53 +351,4 @@ const LogistiqueApp = () => {
         </div>
       </div>
 
-      {/* Bouton d'ajout flottant */}
-      <button
-        onClick={() => setShowAddForm(true)}
-        className="fixed right-4 bottom-24 bg-blue-500 text-white rounded-full p-4 shadow-lg hover:bg-blue-600 transition-colors"
-      >
-        <Plus className="w-6 h-6" />
-      </button>
-
-      {/* Navigation du bas */}
-      <div className="fixed bottom-0 inset-x-0 bg-white border-t">
-        <div className="max-w-xl mx-auto px-4 py-2 flex justify-around">
-          <button 
-            onClick={() => setActiveTab('shelf')}
-            className={`flex flex-col items-center p-2 transition-colors ${
-              activeTab === 'shelf' ? 'text-blue-500' : 'text-gray-400'
-            }`}
-          >
-            <Package className="w-6 h-6" />
-            <span className="text-xs mt-1">Sur Étagère</span>
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab('ordered')}
-            className={`flex flex-col items-center p-2 transition-colors ${
-              activeTab === 'ordered' ? 'text-blue-500' : 'text-gray-400'
-            }`}
-          >
-            <ShoppingCart className="w-6 h-6" />
-            <span className="text-xs mt-1">Commandes</span>
-          </button>
-          
-          <button 
-            onClick={() => setActiveTab('shipped')}
-            className={`flex flex-col items-center p-2 transition-colors ${
-              activeTab === 'shipped' ? 'text-blue-500' : 'text-gray-400'
-            }`}
-          >
-            <Truck className="w-6 h-6" />
-            <span className="text-xs mt-1">Expédié</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Formulaires modaux */}
-      {showAddForm && <AddProductForm />}
-    </div>
-  );
-};
-
-export default LogistiqueApp;
+      {/* Bouton d'ajout fl​​​​​​​​​​​​​​​​
