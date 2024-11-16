@@ -1,26 +1,21 @@
 'use client';
 
 import React, { useState } from 'react';
+import { Plus, Search, Package, Truck, ShoppingCart, X, MoreVertical, Edit, Trash2 } from 'lucide-react';
 
-interface Product {
-  id: string;
-  name: string;
-  reference: string;
-  client: string;
-  orderNumber: string;
-  date: string;
-  shelf: string;
-  status: 'shelf' | 'ordered' | 'shipped';
-}
+const LogistiqueApp = () => {
+  const [activeTab, setActiveTab] = useState('shelf');
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [showActionMenu, setShowActionMenu] = useState(null);
 
-export default function LogistiqueApp() {
-  const [activeTab, setActiveTab] = useState<'shelf' | 'ordered' | 'shipped'>('shelf');
-  const [products, setProducts] = useState<Product[]>([
+  const [products, setProducts] = useState([
     {
       id: "P001",
-      name: "Produit 1",
+      name: "iPhone 15 Pro",
       reference: "REF123",
-      client: "Client A",
+      client: "Martin Dupont",
       orderNumber: "CMD001",
       date: "2024-11-16",
       shelf: "A1",
@@ -28,94 +23,116 @@ export default function LogistiqueApp() {
     }
   ]);
 
-  const getStatusColor = (status: Product['status']) => {
-    switch (status) {
-      case 'shipped': return 'bg-emerald-500';
-      case 'ordered': return 'bg-amber-500';
-      case 'shelf': return 'bg-yellow-400';
-      default: return 'bg-gray-300';
-    }
+  const statusColors = {
+    shipped: 'bg-gradient-to-r from-green-500 to-green-600',
+    ordered: 'bg-gradient-to-r from-orange-400 to-orange-500',
+    shelf: 'bg-gradient-to-r from-blue-400 to-blue-500'
   };
 
-  const getStatusText = (status: Product['status']) => {
-    switch (status) {
-      case 'shipped': return 'Expédié';
-      case 'ordered': return 'En commande';
-      case 'shelf': return 'Sur étagère';
-      default: return 'Inconnu';
-    }
+  const changeStatus = (productId, newStatus) => {
+    setProducts(products.map(product => 
+      product.id === productId ? {...product, status: newStatus} : product
+    ));
+    setShowActionMenu(null);
   };
 
-  const filteredProducts = products.filter(product => product.status === activeTab);
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            {activeTab === 'shelf' ? 'Sur Étagère' : 
-             activeTab === 'ordered' ? 'Commandes' : 'Expédié'}
-          </h1>
-          <div className="mt-4">
-            <input
-              type="text"
-              placeholder="Rechercher un produit..."
-              className="w-full bg-gray-100 rounded-lg py-2 px-4 text-gray-700"
-            />
-          </div>
-        </div>
-      </header>
-
-      {/* Content */}
-      <main className="max-w-4xl mx-auto px-4 py-6">
-        <div className="space-y-4">
-          {filteredProducts.map((product) => (
-            <div key={product.id} className="bg-white rounded-lg shadow p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-medium">{product.name}</h3>
-                  <p className="text-sm text-gray-500">
-                    Commande #{product.orderNumber} • Client: {product.client}
-                  </p>
-                </div>
-                <span className={`px-3 py-1 rounded-full text-white text-sm ${getStatusColor(product.status)}`}>
-                  {getStatusText(product.status)}
-                </span>
-              </div>
-              <div className="mt-2 text-sm text-gray-600">
-                <p>Référence: {product.reference}</p>
-                <p>Étagère: {product.shelf}</p>
-                <p>Date: {product.date}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </main>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 inset-x-0 bg-white border-t">
-        <div className="max-w-4xl mx-auto px-4 py-2 flex justify-around">
-          <button 
-            onClick={() => setActiveTab('shelf')}
-            className={`flex flex-col items-center p-2 ${activeTab === 'shelf' ? 'text-blue-500' : 'text-gray-400'}`}
-          >
-            <span className="text-sm">Sur Étagère</span>
-          </button>
-          <button 
-            onClick={() => setActiveTab('ordered')}
-            className={`flex flex-col items-center p-2 ${activeTab === 'ordered' ? 'text-blue-500' : 'text-gray-400'}`}
-          >
-            <span className="text-sm">Commandes</span>
-          </button>
-          <button 
-            onClick={() => setActiveTab('shipped')}
-            className={`flex flex-col items-center p-2 ${activeTab === 'shipped' ? 'text-blue-500' : 'text-gray-400'}`}
-          >
-            <span className="text-sm">Expédié</span>
-          </button>
-        </div>
-      </nav>
+  const ActionMenu = ({ product }) => (
+    <div className="absolute right-2 top-12 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-20">
+      <div className="px-3 py-2 text-sm text-gray-500 border-b border-gray-100">
+        Changer le statut
+      </div>
+      <button 
+        onClick={() => changeStatus(product.id, 'shelf')}
+        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+      >
+        <Package className="w-4 h-4" />
+        Sur Étagère
+      </button>
+      <button 
+        onClick={() => changeStatus(product.id, 'ordered')}
+        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+      >
+        <ShoppingCart className="w-4 h-4" />
+        En Commande
+      </button>
+      <button 
+        onClick={() => changeStatus(product.id, 'shipped')}
+        className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2"
+      >
+        <Truck className="w-4 h-4" />
+        Expédié
+      </button>
+      <div className="border-t border-gray-100 mt-2">
+        <button 
+          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-blue-500"
+        >
+          <Edit className="w-4 h-4" />
+          Modifier
+        </button>
+        <button 
+          className="w-full px-4 py-2 text-left text-sm hover:bg-gray-50 flex items-center gap-2 text-red-500"
+        >
+          <Trash2 className="w-4 h-4" />
+          Supprimer
+        </button>
+      </div>
     </div>
   );
-}
+
+  // Le reste du code reste identique, mais remplacez le rendu des cartes par ceci :
+  const ProductCard = ({ product }) => (
+    <div 
+      className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+    >
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className={`px-4 py-1.5 rounded-full text-white text-sm font-medium ${statusColors[product.status]} shadow-sm`}>
+            {product.status === 'shipped' ? 'Expédié' : 
+             product.status === 'ordered' ? 'En commande' : 'Sur étagère'}
+          </span>
+          <div className="relative">
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowActionMenu(showActionMenu === product.id ? null : product.id);
+              }}
+              className="p-2 hover:bg-gray-100 rounded-full"
+            >
+              <MoreVertical className="w-5 h-5 text-gray-500" />
+            </button>
+            {showActionMenu === product.id && <ActionMenu product={product} />}
+          </div>
+        </div>
+        <h3 className="font-medium text-lg mb-1">{product.name}</h3>
+        <div className="space-y-1 text-sm text-gray-600">
+          <p className="flex justify-between">
+            <span>Commande</span>
+            <span className="font-medium text-gray-900">#{product.orderNumber}</span>
+          </p>
+          <p className="flex justify-between">
+            <span>Client</span>
+            <span className="font-medium text-gray-900">{product.client}</span>
+          </p>
+          <p className="flex justify-between">
+            <span>Référence</span>
+            <span className="font-medium text-gray-900">{product.reference}</span>
+          </p>
+          <p className="flex justify-between">
+            <span>Étagère</span>
+            <span className="font-medium text-gray-900">{product.shelf}</span>
+          </p>
+          <p className="flex justify-between">
+            <span>Date</span>
+            <span className="font-medium text-gray-900">{product.date}</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    // ... le reste du code reste identique
+  );
+};
+
+export default LogistiqueApp;
