@@ -21,22 +21,23 @@ const LogistiqueApp = () => {
     }
   ]);
 
-  const handleAddProduct = (e) => {
+  const handleAddProduct = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
     const newProduct = {
       id: `P${String(products.length + 1).padStart(3, '0')}`,
-      name: formData.get('name'),
-      reference: formData.get('reference'),
-      client: formData.get('client'),
-      orderNumber: formData.get('orderNumber'),
-      shelf: formData.get('shelf'),
-      date: formData.get('date'),
-      status: 'shelf'
+      name: formData.get('name')?.toString() || '',
+      reference: formData.get('reference')?.toString() || '',
+      client: formData.get('client')?.toString() || '',
+      orderNumber: formData.get('orderNumber')?.toString() || '',
+      shelf: formData.get('shelf')?.toString() || '',
+      date: formData.get('date')?.toString() || new Date().toISOString().split('T')[0],
+      status: 'shelf' as const
     };
     setProducts([...products, newProduct]);
     setShowAddForm(false);
-  };
+};
 
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
