@@ -2,17 +2,52 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .animate-slideUp {
+    animation: slideUp 0.3s ease-in-out;
+  }
 }
 
-body {
-  color: rgb(var(--foreground-rgb));
-  background: rgb(var(--background-end-rgb));
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-.min-h-screen {
-  min-height: 100vh;
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+```
+
+2. **Le fichier tailwind.config.js**
+Vérifiez qu'il contient :
+```javascript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {
+      scale: {
+        '98': '0.98',
+      },
+    },
+  },
+  safelist: [
+    'bg-green-500',
+    'bg-orange-500',
+    'bg-yellow-400',
+    'bg-pink-500',
+    'hover:bg-green-600',
+    'hover:bg-orange-600',
+    'hover:bg-yellow-500',
+    'hover:bg-pink-600',
+  ],
 }
