@@ -23,31 +23,37 @@
 }
 ```
 
-2. **Le fichier tailwind.config.js**
-Vérifiez qu'il contient :
+2. **Ensuite, créez/modifiez le fichier `tailwind.config.js`** :
 ```javascript
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {
-      scale: {
-        '98': '0.98',
-      },
-    },
+    extend: {},
   },
-  safelist: [
-    'bg-green-500',
-    'bg-orange-500',
-    'bg-yellow-400',
-    'bg-pink-500',
-    'hover:bg-green-600',
-    'hover:bg-orange-600',
-    'hover:bg-yellow-500',
-    'hover:bg-pink-600',
-  ],
+  plugins: [],
+}
+```
+
+3. **Enfin, vérifiez que votre `package.json` contient** :
+```json
+{
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "lucide-react": "latest"
+  },
+  "devDependencies": {
+    "autoprefixer": "latest",
+    "postcss": "latest",
+    "tailwindcss": "latest",
+    "typescript": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest"
+  }
 }
