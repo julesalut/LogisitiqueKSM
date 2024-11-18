@@ -3,12 +3,31 @@
 import React, { useState } from 'react';
 import { Plus, Search, Package, Truck, ShoppingCart, RotateCcw, X } from 'lucide-react';
 
+type ProductStatus = 'shelf' | 'ordered' | 'shipped' | 'restocked';
+
+interface Product {
+  id: string;
+  reference: string;
+  client: string;
+  orderNumber: string;
+  date: string;
+  shelf: string;
+  status: ProductStatus;
+}
+
+interface NavButtonProps {
+  icon: React.ComponentType<any>;
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+}
+
 const LogistiqueApp = () => {
-  const [activeTab, setActiveTab] = useState('shelf');
+  const [activeTab, setActiveTab] = useState<ProductStatus>('shelf');
   const [searchTerm, setSearchTerm] = useState('');
   const [showAddForm, setShowAddForm] = useState(false);
   
-  const products = [
+  const initialProducts: Product[] = [
     {
       id: "P001",
       reference: "REF123",
@@ -20,7 +39,9 @@ const LogistiqueApp = () => {
     }
   ];
 
-  const getStatusColor = (status) => {
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+
+  const getStatusColor = (status: ProductStatus): string => {
     switch (status) {
       case 'shelf': return 'bg-yellow-500';
       case 'ordered': return 'bg-orange-500';
@@ -30,12 +51,12 @@ const LogistiqueApp = () => {
     }
   };
 
-  const NavButton = ({ icon: Icon, label, isActive, onClick }) => (
+  const NavButton: React.FC<NavButtonProps> = ({ icon: Icon, label, isActive, onClick }) => (
     <button 
       onClick={onClick}
       className={`
         flex flex-col items-center justify-center p-6 rounded-2xl
-        ${isActive ? getStatusColor(label.toLowerCase().replace(' ', '')) + ' text-white' : 'bg-gray-100 text-gray-600'}
+        ${isActive ? getStatusColor(label.toLowerCase().replace(' ', '') as ProductStatus) + ' text-white' : 'bg-gray-100 text-gray-600'}
         hover:scale-105 active:scale-95 transition-all duration-200 
         w-full mx-2 shadow-md hover:shadow-lg
       `}
@@ -45,15 +66,45 @@ const LogistiqueApp = () => {
     </button>
   );
 
+  const handleAddProduct = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    
+    const newProduct: Product = {
+      id: `P${String(products.length + 1).padStart(3, '0')}`,
+      reference: formData.get('reference')?.toString() || '',
+      client: formData.get('client')?.toString() || '',
+      orderNumber: formData.get('orderNumber')?.toString() || '',
+      shelf: formData.get('shelf')?.toString() || '',
+      date: formData.get('date')?.toString() || new Date().toISOString().split('T')[0],
+      status: 'shelf'
+    };
+    
+    setProducts([...products, newProduct]);
+    setShowAddForm(false);
+  };
+
+  const filteredProducts = products.filter(product => {
+    const matchesSearch = (
+      product.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.client.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.orderNumber.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    return matchesSearch && product.status === activeTab;
+  });
+
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* En-tête */}
       <div className="bg-white shadow-lg fixed top-0 left-0 right-0 z-10">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h1 className="text-3xl font-bold">{activeTab === 'shelf' ? 'Sur Étagère' : 
-              activeTab === 'ordered' ? 'Commandes' : 
-              activeTab === 'shipped' ? 'Expédié' : 'Remise en Stock'}</h1>
+            <h1 className="text-3xl font-bold">
+              {activeTab === 'shelf' ? 'Sur Étagère' : 
+               activeTab === 'ordered' ? 'Commandes' : 
+               activeTab === 'shipped' ? 'Expédié' : 'Remise en Stock'}
+            </h1>
           </div>
 
           <div className="relative">
@@ -73,7 +124,7 @@ const LogistiqueApp = () => {
       {/* Contenu */}
       <div className="pt-36 px-6">
         <div className="space-y-6">
-          {products.map((product) => (
+          {filteredProducts.map((product) => (
             <div key={product.id} 
               className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden">
               <div className={`p-4 ${getStatusColor(product.status)} text-white`}>
@@ -115,25 +166,25 @@ const LogistiqueApp = () => {
         <div className="flex justify-between max-w-6xl mx-auto">
           <NavButton 
             icon={Package} 
-            label="Sur Étagère"
+            label="shelf"
             isActive={activeTab === 'shelf'}
             onClick={() => setActiveTab('shelf')}
           />
           <NavButton 
             icon={ShoppingCart} 
-            label="Commandes"
+            label="ordered"
             isActive={activeTab === 'ordered'}
             onClick={() => setActiveTab('ordered')}
           />
           <NavButton 
             icon={Truck} 
-            label="Expédié"
+            label="shipped"
             isActive={activeTab === 'shipped'}
             onClick={() => setActiveTab('shipped')}
           />
           <NavButton 
             icon={RotateCcw} 
-            label="Remise Stock"
+            label="restocked"
             isActive={activeTab === 'restocked'}
             onClick={() => setActiveTab('restocked')}
           />
@@ -154,11 +205,12 @@ const LogistiqueApp = () => {
               </button>
             </div>
 
-            <form className="space-y-6">
+            <form onSubmit={handleAddProduct} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium mb-2">Référence</label>
                 <input 
                   type="text"
+                  name="reference"
                   className="w-full border rounded-xl p-4 focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -167,6 +219,7 @@ const LogistiqueApp = () => {
                 <label className="block text-sm font-medium mb-2">Client</label>
                 <input 
                   type="text"
+                  name="client"
                   className="w-full border rounded-xl p-4 focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -175,6 +228,7 @@ const LogistiqueApp = () => {
                 <label className="block text-sm font-medium mb-2">N° Commande</label>
                 <input 
                   type="text"
+                  name="orderNumber"
                   className="w-full border rounded-xl p-4 focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -183,6 +237,7 @@ const LogistiqueApp = () => {
                 <label className="block text-sm font-medium mb-2">Étagère</label>
                 <input 
                   type="text"
+                  name="shelf"
                   className="w-full border rounded-xl p-4 focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -191,6 +246,7 @@ const LogistiqueApp = () => {
                 <label className="block text-sm font-medium mb-2">Date d'entrée</label>
                 <input 
                   type="date"
+                  name="date"
                   className="w-full border rounded-xl p-4 focus:ring-2 focus:ring-blue-500"
                   required
                 />
