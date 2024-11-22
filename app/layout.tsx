@@ -1,4 +1,10 @@
 import './globals.css'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Logistique KSM',
+  description: 'Gestion des étagères',
+}
 
 export default function RootLayout({
   children,
@@ -10,9 +16,4 @@ export default function RootLayout({
       <body>{children}</body>
     </html>
   )
-}
-
-export const metadata = {
-  title: 'Logistique KSM',
-  description: 'Application de gestion des étagères',
 }
